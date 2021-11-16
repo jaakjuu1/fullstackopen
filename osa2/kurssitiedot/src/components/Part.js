@@ -1,8 +1,8 @@
 import React from 'react'
 
-const Part = (props) => {
+const Part = ({count, name}) => {
   return (
-    <p>{props.nimi} {props.lkm}</p>
+    <p>{name} {count}</p>
   )
 }
 

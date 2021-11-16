@@ -1,10 +1,10 @@
 import React from 'react'
 import Part from './Part'
 
-const Content = (props) => {
+const Content = ({parts}) => {
   return (
     <>
-      {props.parts.map((part) => <Part nimi={part.name} lkm={part.exercises} key={part.name} />)}
+      {parts.map((part) => <Part name={part.name} count={part.exercises} key={part.id} />)}
     </>
   )
 }
