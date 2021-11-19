@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Results from './components/Results'
-import Filter from './components/Filter'
-import Form from './components/Form'
-import axios from 'axios'
+import Results from "./components/Results";
+import Filter from "./components/Filter";
+import Form from "./components/Form";
+import db from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -11,11 +11,8 @@ const App = () => {
   const [newQuery, setNewQuery] = useState("");
 
   useEffect(() => {
-    axios.get('http://localhost:3001/persons')
-      .then(res => {
-        setPersons(res.data)
-      })
-  },[])
+    db.getAll().then((persons) => setPersons(persons));
+  }, []);
 
   const results = persons.filter((person) =>
     person.name.toLowerCase().includes(newQuery.toLowerCase())
@@ -35,13 +32,31 @@ const App = () => {
           person.name.toLowerCase() === personObject.name.toLowerCase()
       )
     ) {
-      alert(`${personObject.name} is already in phonebook!`);
-      return;
+      let updatedPerson = persons.find(person => person.name === newName)
+      return window.confirm(
+        "User is alreydy in the DB. Do you want to replace the number?"
+      )
+        ? db.modNumber(personObject, updatedPerson.id).then((res) => {
+            setPersons(persons.map( person => person.id !== updatedPerson.id ? person : res ));
+            setNewName("");
+            setNewNumber("");
+          })
+        : false;
     }
 
-    setPersons(persons.concat(personObject));
-    setNewName("");
-    setNewNumber("");
+    db.addNumber(personObject).then((res) => {
+      setPersons(persons.concat(res));
+      setNewName("");
+      setNewNumber("");
+    });
+  };
+
+  const removeContact = (id) => {
+    return window.confirm("Poistetaanko yhteystieto?")
+      ? db.removeNumber(id).then((res) => {
+          setPersons(persons.filter((person) => person.id !== id));
+        })
+      : null;
   };
 
   const handleName = (e) => {
@@ -61,9 +76,15 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter newQuery={newQuery} handleQuery={handleQuery} />
       <h2>add a new</h2>
-      <Form handleSubmit={handleSubmit} newName={newName} handleName={handleName} handleNumber={handleNumber} />
+      <Form
+        handleSubmit={handleSubmit}
+        newName={newName}
+        newNumber={newNumber}
+        handleName={handleName}
+        handleNumber={handleNumber}
+      />
       <h2>Numbers</h2>
-      <Results results={results} />
+      <Results results={results} removeContact={removeContact} />
       ...
     </div>
   );
