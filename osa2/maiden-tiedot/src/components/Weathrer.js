@@ -11,14 +11,10 @@ const Weather = ( {capital} ) => {
         `http://api.weatherapi.com/v1/current.json?key=${apikey}&q=${capital[0]}&aqi=no`
       )
       .then((res) => {
-        console.log(res)
         const data = res.data;
-        console.log(data);
         setClimate(data);
       });
   }, [capital]);
-
-  console.log(capital, climate)
 
   return (
     <div>
