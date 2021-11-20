@@ -3,15 +3,20 @@ import Results from "./components/Results";
 import Filter from "./components/Filter";
 import Form from "./components/Form";
 import db from "./services/persons";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newQuery, setNewQuery] = useState("");
+  const [notification, setNotification] = useState(null);
+  const [notificationState, setNotificationState] = useState('notice')
 
   useEffect(() => {
     db.getAll().then((persons) => setPersons(persons));
+    setNotification('Luettelo ladattu', )
+    setTimeout(() => setNotification(null), 4000)
   }, []);
 
   const results = persons.filter((person) =>
@@ -38,14 +43,25 @@ const App = () => {
       )
         ? db.modNumber(personObject, updatedPerson.id).then((res) => {
             setPersons(persons.map( person => person.id !== updatedPerson.id ? person : res ));
+            setNotification(`${res.name} numero päivitetty`)
+            setNotificationState('notice')
+            setTimeout(() => setNotification(null), 3000)
             setNewName("");
             setNewNumber("");
+          })
+          .catch(err => {
+            setNotification(`${updatedPerson.name} has already been removed from the server!`)
+            setNotificationState('remove')
+            setTimeout(() => setNotification(null),4000)
           })
         : false;
     }
 
     db.addNumber(personObject).then((res) => {
       setPersons(persons.concat(res));
+      setNotification(`Added ${res.name}`)
+      setNotificationState('add')
+      setTimeout(() => setNotification(null),4000)
       setNewName("");
       setNewNumber("");
     });
@@ -55,6 +71,9 @@ const App = () => {
     return window.confirm("Poistetaanko yhteystieto?")
       ? db.removeNumber(id).then((res) => {
           setPersons(persons.filter((person) => person.id !== id));
+          setNotification(`${id} was removed!`)
+          setNotificationState('remove')
+          setTimeout(() => setNotification(null) ,4000)
         })
       : null;
   };
@@ -74,6 +93,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} state={notificationState} />
       <Filter newQuery={newQuery} handleQuery={handleQuery} />
       <h2>add a new</h2>
       <Form
