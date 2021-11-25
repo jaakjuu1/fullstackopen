@@ -37,7 +37,8 @@ const App = () => {
           person.name.toLowerCase() === personObject.name.toLowerCase()
       )
     ) {
-      let updatedPerson = persons.find(person => person.name === newName)
+      let updatedPerson = persons.find(person => person.name.toLowerCase() === personObject.name.toLowerCase())
+      console.log(updatedPerson)
       return window.confirm(
         "User is alreydy in the DB. Do you want to replace the number?"
       )
