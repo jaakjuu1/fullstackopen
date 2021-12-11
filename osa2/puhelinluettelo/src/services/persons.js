@@ -15,7 +15,7 @@ const addNumber = (personObject) => {
 }
 
 const modNumber = (personObject, id) => {
-  return axios.patch(`${baseUrl}/${id}`, personObject).then(res => res.data)
+  return axios.put(`${baseUrl}/${id}`, personObject).then(res => res.data)
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export

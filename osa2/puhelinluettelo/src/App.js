@@ -11,12 +11,12 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [newQuery, setNewQuery] = useState("");
   const [notification, setNotification] = useState(null);
-  const [notificationState, setNotificationState] = useState('notice')
+  const [notificationState, setNotificationState] = useState("notice");
 
   useEffect(() => {
     db.getAll().then((persons) => setPersons(persons));
-    setNotification('Luettelo ladattu', )
-    setTimeout(() => setNotification(null), 4000)
+    setNotification("Luettelo ladattu");
+    setTimeout(() => setNotification(null), 4000);
   }, []);
 
   const results = persons.filter((person) =>
@@ -31,50 +31,69 @@ const App = () => {
       number: newNumber,
     };
 
-    if (
-      persons.some(
-        (person) =>
-          person.name.toLowerCase() === personObject.name.toLowerCase()
-      )
-    ) {
-      let updatedPerson = persons.find(person => person.name.toLowerCase() === personObject.name.toLowerCase())
-      console.log(updatedPerson)
+    if (persons.some((person) => person.name === personObject.name)) {
+      let updatedPerson = persons.find(
+        (person) => person.name === personObject.name
+      );
+      console.log(updatedPerson);
       return window.confirm(
         "User is alreydy in the DB. Do you want to replace the number?"
       )
-        ? db.modNumber(personObject, updatedPerson.id).then((res) => {
-            setPersons(persons.map( person => person.id !== updatedPerson.id ? person : res ));
-            setNotification(`${res.name} numero päivitetty`)
-            setNotificationState('notice')
-            setTimeout(() => setNotification(null), 3000)
-            setNewName("");
-            setNewNumber("");
-          })
-          .catch(err => {
-            setNotification(`${updatedPerson.name} has already been removed from the server!`)
-            setNotificationState('remove')
-            setTimeout(() => setNotification(null),4000)
-          })
+        ? db
+            .modNumber(personObject, updatedPerson.id)
+            .then((res) => {
+              console.log(res);
+              setPersons(
+                persons.map((person) =>
+                  person.name !== updatedPerson.name ? person : res
+                )
+              );
+              setNotification(`${res.name} numero päivitetty`);
+              setNotificationState("notice");
+              setTimeout(() => setNotification(null), 3000);
+              setNewName("");
+              setNewNumber("");
+            })
+            .catch((err) => {
+              if (err.response.data.error) {
+                setNotification(err.response.data.error);
+                setNotificationState("notice");
+                setTimeout(() => setNotification(null), 3000);
+              } else {
+                setNotification(
+                  `${updatedPerson.name} has already been removed from the server!`
+                );
+                setNotificationState("remove");
+                setTimeout(() => setNotification(null), 4000);
+              }
+            })
         : false;
     }
 
-    db.addNumber(personObject).then((res) => {
-      setPersons(persons.concat(res));
-      setNotification(`Added ${res.name}`)
-      setNotificationState('add')
-      setTimeout(() => setNotification(null),4000)
-      setNewName("");
-      setNewNumber("");
-    });
+    db.addNumber(personObject)
+      .then((res) => {
+        setPersons(persons.concat(res));
+        setNotification(`Added ${res.name}`);
+        setNotificationState("add");
+        setTimeout(() => setNotification(null), 4000);
+        setNewName("");
+        setNewNumber("");
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        setNotification(`${error.response.data.error}`);
+        setNotificationState("notice");
+        setTimeout(() => setNotification(null), 7000);
+      });
   };
 
   const removeContact = (id) => {
     return window.confirm("Poistetaanko yhteystieto?")
       ? db.removeNumber(id).then((res) => {
           setPersons(persons.filter((person) => person.id !== id));
-          setNotification(`${id} was removed!`)
-          setNotificationState('remove')
-          setTimeout(() => setNotification(null) ,4000)
+          setNotification(`${id} was removed!`);
+          setNotificationState("remove");
+          setTimeout(() => setNotification(null), 4000);
         })
       : null;
   };
